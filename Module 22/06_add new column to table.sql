@@ -1,0 +1,1 @@
+alter table readers add vip_level varchar(20);
