@@ -8,7 +8,13 @@ delimiter $$
 create procedure UpdateBestsellers()
 begin
 	
-    declare b_id, numberofrents int;
+    declare b_id int;
+    
+    declare rentTimeInDays int;
+    declare rentTimeInMonths decimal(5, 2);
+    declare totalNumberOfRents int;
+    declare monthlyNumberOfRents decimal(5, 2);
+    
     declare isBestseller boolean;
     
     declare finished int default 0;
@@ -23,21 +29,28 @@ begin
         fetch all_books into b_id;
         
         if(finished = 0) then
-			select count(*) from rents
-				where book_id = b_id and datediff(curdate(), RENT_DATE) < 30 
-			into numberofrents;
+			select datediff(max(RENT_DATE), min(RENT_DATE))
+				from rents
+                where book_id = b_id
+					into rentTimeInDays;
+                    
+			set rentTimeInMonths = rentTimeInDays / 30;
             
-            if (numberofrents > 2) then
-				set isBestseller = true;
-			else
-				set isBestseller = false;
-			end if;
+            select count(*)
+				from rents
+                where book_id = b_id 
+			into totalNumberOfRents;
+            
+            set monthlyNumberOfRents = totalNumberOfRents /rentTimeInMonths;
+            
+            set isBestseller = (monthlyNumberOfRents > 2);
             
             update books set bestseller = isBestseller
 					where book_id = b_id;
             
             commit;
 		end if;
+        
 	end while;
     
     close all_books;
