@@ -9,6 +9,7 @@ create procedure UpdateBestsellers()
 begin
 	
     declare b_id, numberofrents int;
+    declare isBestseller boolean;
     
     declare finished int default 0;
     
@@ -23,16 +24,17 @@ begin
         
         if(finished = 0) then
 			select count(*) from rents
-				where book_id = b_id
+				where book_id = b_id and datediff(curdate(), RENT_DATE) < 30 
 			into numberofrents;
             
             if (numberofrents > 2) then
-				update books set bestseller = true
-					where book_id = b_id;
+				set isBestseller = true;
 			else
-				update books set bestseller = false
-					where book_id = b_id;
+				set isBestseller = false;
 			end if;
+            
+            update books set bestseller = isBestseller
+					where book_id = b_id;
             
             commit;
 		end if;
