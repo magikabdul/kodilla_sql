@@ -8,13 +8,18 @@ create table STATS(
     primary key (STAT_ID)
 );
 
+
+
 create view BESTSELLERS_COUNT as
 select count(*) BESTSELLERS from books
 	where bestseller = true;
-    
+
+
+delimiter $$    
 create event UPDATE_BESTSELLERS
 	on schedule every 1 day
     do 
-		call UpdateBestsellers();
+		call UpdateBestsellers()$$
 		insert into stats (STAT_DATE, STAT, VALUE)
-			select (curdate(), "BESTSELLERS", BESTSELLERS) from bestsellers_count;
+			select (curdate(), "BESTSELLERS", BESTSELLERS) from bestsellers_count
+delimiter ;
