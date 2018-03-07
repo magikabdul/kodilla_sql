@@ -17,9 +17,16 @@ select count(*) BESTSELLERS from books
 
 delimiter $$    
 create event UPDATE_BESTSELLERS
-	on schedule every 1 day
+	on schedule every 1 minute
     do 
-		call UpdateBestsellers()$$
+		begin
+        declare qty int default 0;
+        
+        select BESTSELLERS from bestsellers_count
+			into qty;
+        
+		call UpdateBestsellers();
 		insert into stats (STAT_DATE, STAT, VALUE)
-			select (curdate(), "BESTSELLERS", BESTSELLERS) from bestsellers_count
+			values (curdate(), "BESTSELLERS", qty);
+		end$$
 delimiter ;
